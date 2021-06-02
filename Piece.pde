@@ -7,10 +7,11 @@ class Piece {
 	Point[] diagonals = {new Point(1,1), new Point(-1,1), new Point(-1,-1), new Point(1,-1)};
 	Point[] lines = {new Point(1,0), new Point(0,1), new Point(-1,0), new Point(0,-1)};
 
-	Piece(int x, int y, boolean isWhite) {
+	Piece(int x, int y, boolean isWhite, char t) {
 		pos = new Point(x, y);
 		gridPos = new Point(x/tileSize, y/tileSize);
 		white = isWhite;
+		type = t;
 	}
 
 	//-----------------------------------------------
@@ -28,14 +29,6 @@ class Piece {
 
 	//-----------------------------------------------
 
-	void move(int x, int y) {
-		pos.move(x*tileSize + tileSize/2, y*tileSize + tileSize/2);
-		gridPos.move(x, y);
-		firstMove = false;
-	}
-
-	//-----------------------------------------------
-
 	boolean inBounds(int x, int y) {
 		if (x >= 0 && y >= 0 && x < 8 && y < 8) {
 			return true;
@@ -46,10 +39,22 @@ class Piece {
 
 	boolean canMove(int x, int y) {
 		if (inBounds(x, y)) {
-			return true;
+			// can't take own pieces
+			if (getPieceAt(x,y) != null) {
+				if (getPieceAt(x,y).white == white) {
+					return false;
+				}
+			}
+			// test move against list of valid moves
+			Point move = new Point(x,y);
+			if (validMoves.size() > 0) {
+				if (validMoves.contains(move)) {
+					return true;
+				}
+			}
 		}
-		return false;
-	}
+    return false;
+  }
 
 	void possibleMoves(int x, int y) {
 		// find diagonals
@@ -119,6 +124,13 @@ class Piece {
 		}
 		// king moves
 		if (type == 'K') {
+			// short castles
+			if (firstMove && getPieceAt(x+1,y) == null && getPieceAt(x+2,y) == null) {
+				Piece kingRook = getPieceAt(x+3,y);
+				if (kingRook.type == 'R' && kingRook.firstMove) {
+					validMoves.add(new Point(x+2,y));
+				}
+			}
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
 					Point move = new Point(x+i,y+j);
@@ -177,152 +189,156 @@ class Piece {
 
 //-----------------------------------------------
 
-class Pawn extends Piece {
-	Pawn(int x, int y, boolean isWhite) {
-		super(x, y, isWhite);
-		type = 'P';
-	}
+// class Pawn extends Piece {
+// 	Pawn(int x, int y, boolean isWhite, char t) {
+// 		super(x, y, isWhite, t);
+// 		type = 'P';
+// 	}
 
-	boolean canMove(int x, int y) {
-		// can't take own pieces
-		if (getPieceAt(x,y) != null) {
-			if (getPieceAt(x,y).white == white) {
-				return false;
-			}
-		}
-		// test move against list of valid moves
-		Point move = new Point(x,y);
-		if (validMoves.size() > 0) {
-			if (validMoves.contains(move)) {
-				return true;
-			}
-		}
-    return false;
-  }
-}
+// 	boolean canMove(int x, int y) {
+	// 	// can't take own pieces
+	// 	if (getPieceAt(x,y) != null) {
+	// 		if (getPieceAt(x,y).white == white) {
+	// 			return false;
+	// 		}
+	// 	}
+	// 	// test move against list of valid moves
+	// 	Point move = new Point(x,y);
+	// 	if (validMoves.size() > 0) {
+	// 		if (validMoves.contains(move)) {
+	// 			return true;
+	// 		}
+	// 	}
+  //   return false;
+  // }
+// }
 
-//-----------------------------------------------
+// //-----------------------------------------------
 
-class King extends Piece {
-	King(int x, int y, boolean isWhite) {
-		super(x, y, isWhite);
-		type = 'K';
-	}
+// class King extends Piece {
+// 	King(int x, int y, boolean isWhite) {
+// 		super(x, y, isWhite);
+// 		type = 'K';
+// 	}
 
-	boolean canMove(int x, int y) {
-		// can't take own pieces
-		if (getPieceAt(x,y) != null) {
-			if (getPieceAt(x,y).white == white) {
-				return false;
-			}
-		}
-		// test move against list of valid moves
-		Point move = new Point(x,y);
-		if (validMoves.size() > 0) {
-			if (validMoves.contains(move)) {
-				return true;
-			}
-		}
-    return false;
-  }
-}
+// 	boolean canMove(int x, int y) {
+// 		// can't take own pieces
+// 		if (getPieceAt(x,y) != null) {
+// 			if (getPieceAt(x,y).white == white) {
+// 				return false;
+// 			}
+// 		}
+// 		// test move against list of valid moves
+// 		Point move = new Point(x,y);
+// 		if (validMoves.size() > 0) {
+// 			if (validMoves.contains(move)) {
+// 				if (firstMove && white && move.x == 6) {
+// 					Piece rook = getPieceAt(7,7);
+// 					rook.move(5,7);
+// 				}
+// 				return true;
+// 			}
+// 		}
+//     return false;
+//   }
+// }
 
-//-----------------------------------------------
+// //-----------------------------------------------
 
-class Queen extends Piece {
-	Queen(int x, int y, boolean isWhite) {
-		super(x, y, isWhite);
-		type = 'Q';
-	}
+// class Queen extends Piece {
+// 	Queen(int x, int y, boolean isWhite) {
+// 		super(x, y, isWhite);
+// 		type = 'Q';
+// 	}
 
-	boolean canMove(int x, int y) {
-		// can't take own pieces
-		if (getPieceAt(x,y) != null) {
-			if (getPieceAt(x,y).white == white) {
-				return false;
-			}
-		}
-		// test move against list of valid moves
-		Point move = new Point(x,y);
-		if (validMoves.size() > 0) {
-			if (validMoves.contains(move)) {
-				return true;
-			}
-		}
-		return false;
-	}
-}
+// 	boolean canMove(int x, int y) {
+// 		// can't take own pieces
+// 		if (getPieceAt(x,y) != null) {
+// 			if (getPieceAt(x,y).white == white) {
+// 				return false;
+// 			}
+// 		}
+// 		// test move against list of valid moves
+// 		Point move = new Point(x,y);
+// 		if (validMoves.size() > 0) {
+// 			if (validMoves.contains(move)) {
+// 				return true;
+// 			}
+// 		}
+// 		return false;
+// 	}
+// }
 
-//-----------------------------------------------
+// //-----------------------------------------------
 
-class Knight extends Piece {
-	Knight(int x, int y, boolean isWhite) {
-		super(x, y, isWhite);
-		type = 'N';
-	}
+// class Knight extends Piece {
+// 	Knight(int x, int y, boolean isWhite) {
+// 		super(x, y, isWhite);
+// 		type = 'N';
+// 	}
 
-	boolean canMove(int x, int y) {
-		// can't take own pieces
-		if (getPieceAt(x,y) != null) {
-			if (getPieceAt(x,y).white == white) {
-				return false;
-			}
-		}
-		// test move against list of valid moves
-		Point move = new Point(x,y);
-		if (validMoves.size() > 0) {
-			if (validMoves.contains(move)) {
-				return true;
-			}
-		}
-		return false;
-	}
-}
+// 	boolean canMove(int x, int y) {
+// 		// can't take own pieces
+// 		if (getPieceAt(x,y) != null) {
+// 			if (getPieceAt(x,y).white == white) {
+// 				return false;
+// 			}
+// 		}
+// 		// test move against list of valid moves
+// 		Point move = new Point(x,y);
+// 		if (validMoves.size() > 0) {
+// 			if (validMoves.contains(move)) {
+// 				return true;
+// 			}
+// 		}
+// 		return false;
+// 	}
+// }
 
-//-----------------------------------------------
+// //-----------------------------------------------
 
-class Bishop extends Piece {
-	Bishop(int x, int y, boolean isWhite) {
-		super(x, y, isWhite);
-		type = 'B';
-	}
+// class Bishop extends Piece {
+// 	Bishop(int x, int y, boolean isWhite) {
+// 		super(x, y, isWhite);
+// 		type = 'B';
+// 	}
 
-	boolean canMove(int x, int y) {
-		if (getPieceAt(x,y) != null) {
-			if (getPieceAt(x,y).white == white) {
-				return false;
-			}
-		}
-		Point move = new Point(x,y);
-		if (validMoves.size() > 0) {
-			if (validMoves.contains(move)) {
-				return true;
-			}
-		}
-		return false;
-	}
-}
+// 	boolean canMove(int x, int y) {
+// 		if (getPieceAt(x,y) != null) {
+// 			if (getPieceAt(x,y).white == white) {
+// 				return false;
+// 			}
+// 		}
+// 		Point move = new Point(x,y);
+// 		if (validMoves.size() > 0) {
+// 			if (validMoves.contains(move)) {
+// 				return true;
+// 			}
+// 		}
+// 		return false;
+// 	}
+// }
 
-//-----------------------------------------------
+// //-----------------------------------------------
 
-class Rook extends Piece {
-	Rook(int x, int y, boolean isWhite) {
-		super(x, y, isWhite);
-		type = 'R';
-	}
+// class Rook extends Piece {
+// 	Rook(int x, int y, boolean isWhite) {
+// 		super(x, y, isWhite);
+// 		type = 'R';
+// 	}
 
-	boolean canMove(int x, int y) {
-		if (getPieceAt(x,y) != null) {
-			if (getPieceAt(x,y).white == white) {
-				return false;
-			}
-		}
-		Point move = new Point(x,y);
-		if (validMoves.size() > 0) {
-			if (validMoves.contains(move)) {
-				return true;
-			}
-		}
-		return false;
-	}
-}
+// 	boolean canMove(int x, int y) {
+// 		if (getPieceAt(x,y) != null) {
+// 			if (getPieceAt(x,y).white == white) {
+// 				return false;
+// 			}
+// 		}
+// 		Point move = new Point(x,y);
+// 		if (validMoves.size() > 0) {
+// 			if (validMoves.contains(move)) {
+// 				return true;
+// 			}
+// 		}
+// 		return false;
+// 	}
+// }

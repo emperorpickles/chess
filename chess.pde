@@ -3,13 +3,12 @@ import java.awt.Point;
 int tileSize = 80;
 int framerate = 30;
 
-ArrayList<Piece> whitePieces = new ArrayList<Piece>();
-ArrayList<Piece> blackPieces = new ArrayList<Piece>();
 ArrayList<Point> validMoves = new ArrayList<Point>();
-Point[][] grid = new Point[8][8];
+String initialState = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 boolean moving = false;
 Piece piece;
+Board b = new Board();
 
 //-----------------------------------------------
 
@@ -17,12 +16,7 @@ void setup() {
 	frameRate(framerate);
 	size(640, 640);
 
-	for (int y = 0; y < 8; y++) {
-		for (int x = 0; x < 8; x++) {
-			grid[x][y] = new Point(toGrid(x), toGrid(y));
-		}
-	}
-	createBoard();
+	b.createBoard(initialState);
 }
 
 //-----------------------------------------------
@@ -42,11 +36,12 @@ void draw() {
 		}
 	}
 	// show pieces
-	for (int i = 0; i < whitePieces.size(); i++) {
-		whitePieces.get(i).show();
-	}
-	for (int i = 0; i < blackPieces.size(); i++) {
-		blackPieces.get(i).show();
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+			if (b.board[x][y] != null) {
+				b.board[x][y].show();
+			}
+		}
 	}
 	// show valid moves
 	if (validMoves.size() > 0) {
@@ -78,13 +73,9 @@ void mousePressed() {
 			if (piece.canMove(x,y)) {
 				Piece attacked = getPieceAt(x,y);
 				if (attacked != null) {
-					if (attacked.white) {
-						whitePieces.remove(attacked);
-					} else {
-						blackPieces.remove(attacked);
-					}
+					// b.board.remove(attacked);
 				}
-				piece.move(x, y);
+				b.move(piece.gridPos.x, piece.gridPos.y, x, y);
 			}
 			validMoves.clear();
 		}
@@ -95,49 +86,14 @@ void mousePressed() {
 //-----------------------------------------------
 
 Piece getPieceAt(int x, int y) {
-	// check if piece is white
-	for (int i = 0; i < whitePieces.size(); i++) {
-		if (whitePieces.get(i).gridPos.x == x && whitePieces.get(i).gridPos.y == y) {
-			return whitePieces.get(i);
-		}
-	}
-	// check if piece is black
-	for (int i = 0; i < blackPieces.size(); i++) {
-		if (blackPieces.get(i).gridPos.x == x && blackPieces.get(i).gridPos.y == y) {
-			return blackPieces.get(i);
-		}
+	if (b.board[x][y] != null) {
+		return b.board[x][y];
 	}
 	// if not a piece, return null
 	return null;
 }
 
 //-----------------------------------------------
-
-void createBoard() {
-	// create pawns
-	for (int i = 0; i < 8; i++) {
-		whitePieces.add(new Pawn(grid[i][6].x, grid[i][6].y, true));
-		blackPieces.add(new Pawn(grid[i][1].x, grid[i][1].y, false));
-	}
-	// white pieces
-	whitePieces.add(new King(grid[4][7].x, grid[4][7].y, true));
-	whitePieces.add(new Queen(grid[3][7].x, grid[3][7].y, true));
-	whitePieces.add(new Bishop(grid[2][7].x, grid[2][7].y, true));
-	whitePieces.add(new Bishop(grid[5][7].x, grid[5][7].y, true));
-	whitePieces.add(new Knight(grid[1][7].x, grid[1][7].y, true));
-	whitePieces.add(new Knight(grid[6][7].x, grid[6][7].y, true));
-	whitePieces.add(new Rook(grid[0][7].x, grid[0][7].y, true));
-	whitePieces.add(new Rook(grid[7][7].x, grid[7][7].y, true));
-	// black pieces
-	blackPieces.add(new King(grid[4][0].x, grid[4][0].y, false));
-	blackPieces.add(new Queen(grid[3][0].x, grid[3][0].y, false));
-	blackPieces.add(new Bishop(grid[2][0].x, grid[2][0].y, false));
-	blackPieces.add(new Bishop(grid[5][0].x, grid[5][0].y, false));
-	blackPieces.add(new Knight(grid[1][0].x, grid[1][0].y, false));
-	blackPieces.add(new Knight(grid[6][0].x, grid[6][0].y, false));
-	blackPieces.add(new Rook(grid[0][0].x, grid[0][0].y, false));
-	blackPieces.add(new Rook(grid[7][0].x, grid[7][0].y, false));
-}
 
 int toGrid(int x) {
 	// helper function to convert grid coords to pixel coords
