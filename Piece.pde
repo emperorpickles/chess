@@ -103,7 +103,7 @@ class Piece {
 		if (type == 'N') {
 			for (int i = -2; i <= 2; i++) {
 				for (int j = -2; j <= 2; j++) {
-					if ((abs(i)+abs(j)) % 2 == 1 && abs(i)+abs(j) != 1) {
+					if ((abs(i)+abs(j)) == 3) {
 						Point move = new Point(x+i,y+j);
 						if (!inBounds(move.x, move.y)) {
 							continue;
